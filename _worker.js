@@ -3,12 +3,9 @@ export default {
     const url = new URL(request.url);
     const targetUrl = url.searchParams.get("url");
 
-    // Agar URL me ?url= nahi hai toh simple status ya message return karega
+    // Agar URL me ?url= nahi hai, toh ye normal website request hai -> index.html serve karega
     if (!targetUrl) {
-      return new Response("CricxCrate Proxy Active. Missing target url parameter.", { 
-        status: 200,
-        headers: { "Access-Control-Allow-Origin": "*" }
-      });
+      return env.ASSETS.fetch(request);
     }
     
     try {
