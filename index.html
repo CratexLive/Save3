@@ -130,7 +130,6 @@ button:active, .live-card:active, .match-poster:active, .schedule-line:active, .
 .world-name{margin-top:5px;font-family:"Space Grotesk";font-size:32px;letter-spacing:-2px;font-weight:700;}
 .large .world-name{font-size:46px;}
 
-/* Left-Aligned Larger Thumbnails Schedule Layout */
 .schedule{border-top:1px solid var(--line);width:100%;}
 .schedule-line{min-height:100px;display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--line);cursor:pointer;transition:all 0.25s ease;padding:12px 16px;border-radius:14px;width:100%;}
 .schedule-line:hover{background:rgba(216,255,62,.03);transform:translateX(4px);}
@@ -363,7 +362,7 @@ video#mainVideoPlayer{width:100%;height:100%;object-fit:contain;background:#000;
 </nav>
 <script>
 const JSON_URL = "https://raw.githubusercontent.com/drmlive/fancode-live-events/refs/heads/main/fancode.json";
-const CACHE_KEY = '_cricxcrate_hlsjs_clean_v14';
+const CACHE_KEY = '_cricxcrate_hlsjs_clean_v15';
 const FEED_TIMEOUT = 8000;
 const TELEGRAM = "https://t.me/+m4odTq36LL4xNmI1";
 
@@ -704,7 +703,6 @@ document.addEventListener("click", function(e){
   setTimeout(() => circle.remove(), 500);
 });
 </script>
-
 <script>
 function finishAccess(){
   if(!selected) return;
@@ -775,9 +773,10 @@ function playActiveStream(url) {
     hlsInstance = null;
   }
 
+  // Fallback direct check for Safari/Native iOS HLS support
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = url;
-    video.play().catch(()=>{});
+    video.addEventListener('loadedmetadata', () => { video.play().catch(()=>{}); }, {once: true});
   } else if (Hls.isSupported()) {
     hlsInstance = new Hls({
       autoStartLoad: true,
@@ -814,7 +813,8 @@ function playActiveStream(url) {
       }
     });
   } else {
-    alert("HLS is not supported in this browser.");
+    video.src = url;
+    video.play().catch(()=>{});
   }
 }
 
