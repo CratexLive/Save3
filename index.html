@@ -362,7 +362,7 @@ video#mainVideoPlayer{width:100%;height:100%;object-fit:contain;background:#000;
 </nav>
 <script>
 const JSON_URL = "https://raw.githubusercontent.com/drmlive/fancode-live-events/refs/heads/main/fancode.json";
-const CACHE_KEY = '_cricxcrate_hlsjs_clean_v15';
+const CACHE_KEY = '_cricxcrate_hlsjs_clean_v16';
 const FEED_TIMEOUT = 8000;
 const TELEGRAM = "https://t.me/+m4odTq36LL4xNmI1";
 
@@ -764,18 +764,20 @@ function finishAccess(){
   playActiveStream(streams[0].url);
 }
 
-function playActiveStream(url) {
+function playActiveStream(rawUrl) {
   const video = document.getElementById("mainVideoPlayer");
   if (!video) return;
+
+  // Route stream URL through Cloudflare Worker proxy to bypass CORS / CDN blocks
+  const proxiedUrl = `/proxy?url=${encodeURIComponent(rawUrl)}`;
 
   if (hlsInstance) {
     hlsInstance.destroy();
     hlsInstance = null;
   }
 
-  // Fallback direct check for Safari/Native iOS HLS support
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = url;
+    video.src = proxiedUrl;
     video.addEventListener('loadedmetadata', () => { video.play().catch(()=>{}); }, {once: true});
   } else if (Hls.isSupported()) {
     hlsInstance = new Hls({
@@ -790,7 +792,7 @@ function playActiveStream(url) {
       backBufferLength: 300
     });
 
-    hlsInstance.loadSource(url);
+    hlsInstance.loadSource(proxiedUrl);
     hlsInstance.attachMedia(video);
 
     hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -813,7 +815,7 @@ function playActiveStream(url) {
       }
     });
   } else {
-    video.src = url;
+    video.src = proxiedUrl;
     video.play().catch(()=>{});
   }
 }
