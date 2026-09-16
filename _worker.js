@@ -2,8 +2,13 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const targetUrl = url.searchParams.get("url");
+
+    // Agar URL me ?url= nahi hai toh simple status ya message return karega
     if (!targetUrl) {
-      return new Response("Missing target url", { status: 400 });
+      return new Response("CricxCrate Proxy Active. Missing target url parameter.", { 
+        status: 200,
+        headers: { "Access-Control-Allow-Origin": "*" }
+      });
     }
     
     try {
@@ -28,7 +33,7 @@ export default {
           line = line.trim();
           if (line && !line.startsWith("#")) {
             let absoluteSegmentUrl = line.startsWith("http") ? line : new URL(line, baseUrl).toString();
-            return `${url.origin}/proxy?url=${encodeURIComponent(absoluteSegmentUrl)}`;
+            return `${url.origin}/?url=${encodeURIComponent(absoluteSegmentUrl)}`;
           }
           return line;
         });
